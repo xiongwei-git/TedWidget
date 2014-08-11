@@ -37,3 +37,4 @@ Icon
 
 TedWidget.iml
 gen/com/example/TedWidget/BuildConfig.java
+gen/com/android/TedWidget/BuildConfig.java
