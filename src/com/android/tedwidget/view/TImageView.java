@@ -14,8 +14,11 @@ import android.widget.ImageView;
  * Created by Ted on 14-8-14.
  */
 public class TImageView extends ImageView{
-    private static final float SCALE_FACTOR = 1.10f;
-    private static final long SCALE_ANIM_DURATION = 200l;
+    public static final int FILTER_ON = 0;
+    public static final int FILTER_OFF = 1;
+
+    private static final float SCALE_FACTOR = 1.20f;
+    private static final long SCALE_ANIM_DURATION = 100l;
     private boolean bIsButtonDown;
     private ScaleAnimation mScaleInAnim;
     private ScaleAnimation mScaleOutAnim;
@@ -23,6 +26,7 @@ public class TImageView extends ImageView{
     private String mFilterColorOffStr;
     private String mFilterColorOnStr;
     private boolean bIsFilter = false;
+
 
     public TImageView(Context context) {
         super(context);
@@ -43,7 +47,18 @@ public class TImageView extends ImageView{
         this.bIsFilter = true;
         this.mFilterColorOnStr = colorOn;
         this.mFilterColorOffStr = colorOff;
-        initialize();
+        setFilterState(FILTER_ON);
+    }
+
+    public void setFilterState(int state){
+        if(!bIsFilter){
+            return;
+        }
+        if(state == FILTER_OFF){
+            getDrawable().mutate().setColorFilter(Color.parseColor(mFilterColorOffStr), PorterDuff.Mode.MULTIPLY);
+        }else {
+            getDrawable().mutate().setColorFilter(Color.parseColor(mFilterColorOnStr), PorterDuff.Mode.MULTIPLY);
+        }
     }
 
     @Override
@@ -52,9 +67,7 @@ public class TImageView extends ImageView{
             case MotionEvent.ACTION_DOWN:
                 bIsButtonDown = true;
                 showScaleInAnim();
-                if(bIsFilter){
-                    getDrawable().setColorFilter(Color.parseColor(mFilterColorOnStr), PorterDuff.Mode.MULTIPLY);
-                }
+                setFilterState(FILTER_OFF);
                 break;
             case MotionEvent.ACTION_UP:
                 if (isTouchAvailable(event)) {
@@ -81,9 +94,7 @@ public class TImageView extends ImageView{
     }
 
     private void initialize() {
-        if(bIsFilter){
-            getDrawable().setColorFilter(Color.parseColor(mFilterColorOffStr), PorterDuff.Mode.MULTIPLY);
-        }
+        setFocusable(true);
         nMoveOffset = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10.0f, getResources().getDisplayMetrics());
         ScaleAnimation scaleInAnim = new ScaleAnimation(1.0f, SCALE_FACTOR, 1.0f, SCALE_FACTOR, 1, 0.5f, 1, 0.5f);
         scaleInAnim.setFillAfter(true);
@@ -110,6 +121,8 @@ public class TImageView extends ImageView{
             public void onAnimationEnd(Animation animation) {
                 if (bIsButtonDown) {
                     performClick();
+                }else {
+                    setFilterState(FILTER_ON);
                 }
                 bIsButtonDown = false;
             }
