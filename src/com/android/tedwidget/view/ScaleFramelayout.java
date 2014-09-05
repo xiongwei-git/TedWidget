@@ -1,81 +1,54 @@
 package com.android.tedwidget.view;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.animation.Animation;
 import android.view.animation.ScaleAnimation;
-import android.widget.ImageView;
+import android.widget.FrameLayout;
 import com.android.TedFramework.util.ToastUtil;
 
 /**
- * Created by Ted on 14-8-14.
+ * Created by Ted on 2014/9/5.
+ * 点击时会放大，仿磁铁效果
  */
-public class TImageView extends ImageView{
-    public static final int FILTER_ON = 0;
-    public static final int FILTER_OFF = 1;
-
+public class ScaleFramelayout extends FrameLayout{
+    private Context mContext;
     private static final float SCALE_FACTOR = 1.20f;
     private static final long SCALE_ANIM_DURATION = 100l;
-
-    private Context mContent;
     private boolean bIsButtonDown;
     private ScaleAnimation mScaleInAnim;
     private ScaleAnimation mScaleOutAnim;
     private float nMoveOffset;
-    private String mFilterColorOffStr;
-    private String mFilterColorOnStr;
-    private boolean bIsFilter = false;
 
+    /**是否长按了*/
+    private boolean mIsLongPressed = false;
+    /**记录上次点击的信息*/
+    private float mLastMotionX;
+    private float mLastMotionY;
+    private long mLastDownTime;
 
-
-    public TImageView(Context context) {
+    public ScaleFramelayout(Context context) {
         super(context);
-        this.mContent = context;
+        this.mContext = context;
         initialize();
     }
 
-    public TImageView(Context context, AttributeSet attrs) {
+    public ScaleFramelayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-        this.mContent = context;
+        this.mContext = context;
         initialize();
     }
-
-    public TImageView(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-        this.mContent = context;
-        initialize();
-    }
-
-    public void setFilterColor(String colorOn,String colorOff){
-        this.bIsFilter = true;
-        this.mFilterColorOnStr = colorOn;
-        this.mFilterColorOffStr = colorOff;
-        setFilterState(FILTER_ON);
-    }
-
-    public void setFilterState(int state){
-        if(!bIsFilter){
-            return;
-        }
-        if(state == FILTER_OFF){
-            getDrawable().mutate().setColorFilter(Color.parseColor(mFilterColorOffStr), PorterDuff.Mode.MULTIPLY);
-        }else {
-            getDrawable().mutate().setColorFilter(Color.parseColor(mFilterColorOnStr), PorterDuff.Mode.MULTIPLY);
-        }
-    }
-
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-
+                mLastMotionX = event.getX();
+                mLastMotionY = event.getY();
+                mLastDownTime = event.getDownTime();
                 bIsButtonDown = true;
                 showScaleInAnim();
-                setFilterState(FILTER_OFF);
                 break;
             case MotionEvent.ACTION_UP:
                 if (isTouchAvailable(event)) {
@@ -88,7 +61,20 @@ public class TImageView extends ImageView{
                         bIsButtonDown = false;
                         showScaleOutAnim();
                     }
+                }else {
+                    /**检测是否长按,在非长按时检测*/
+                    if(!mIsLongPressed){
+                        mIsLongPressed = isLongPressed(mLastMotionX, mLastMotionY, event.getX(), event.getY(), mLastDownTime,event.getEventTime(),500);
+                    }
+                    if(mIsLongPressed){
+                        ToastUtil.show(mContext, "长安了");
+                    }else{
+
+                    }
                 }
+                mLastMotionX = event.getX();
+                mLastMotionY = event.getY();
+                mLastDownTime = event.getDownTime();
                 break;
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_OUTSIDE:
@@ -102,7 +88,6 @@ public class TImageView extends ImageView{
     }
 
     private void initialize() {
-        setFocusable(true);
         nMoveOffset = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10.0f, getResources().getDisplayMetrics());
         ScaleAnimation scaleInAnim = new ScaleAnimation(1.0f, SCALE_FACTOR, 1.0f, SCALE_FACTOR, 1, 0.5f, 1, 0.5f);
         scaleInAnim.setFillAfter(true);
@@ -129,14 +114,11 @@ public class TImageView extends ImageView{
             public void onAnimationEnd(Animation animation) {
                 if (bIsButtonDown) {
                     performClick();
-                }else {
-                    setFilterState(FILTER_ON);
                 }
                 bIsButtonDown = false;
             }
         });
     }
-
     private void showScaleInAnim() {
         invalidate();
         startAnimation(mScaleInAnim);
@@ -146,8 +128,31 @@ public class TImageView extends ImageView{
         invalidate();
         startAnimation(mScaleOutAnim);
     }
-
-
+    /**
+     * * 判断是否有长按动作发生 * @param lastX 按下时X坐标 * @param lastY 按下时Y坐标 *
+     *
+     * @param thisX
+     *            移动时X坐标 *
+     * @param thisY
+     *            移动时Y坐标 *
+     * @param lastDownTime
+     *            按下时间 *
+     * @param thisEventTime
+     *            移动时间 *
+     * @param longPressTime
+     *            判断长按时间的阀值
+     */
+    private boolean isLongPressed(float lastX, float lastY, float thisX,
+                                  float thisY, long lastDownTime, long thisEventTime,
+                                  long longPressTime) {
+        float offsetX = Math.abs(thisX - lastX);
+        float offsetY = Math.abs(thisY - lastY);
+        long intervalTime = thisEventTime - lastDownTime;
+        if (offsetX <= 10 && offsetY <= 10 && intervalTime >= longPressTime) {
+            return true;
+        }
+        return false;
+    }
     private boolean isTouchAvailable(MotionEvent event) {
         int x = (int) event.getX();
         int y = (int) event.getY();
