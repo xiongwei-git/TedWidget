@@ -6,6 +6,7 @@ import android.graphics.PorterDuff;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.MotionEvent;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.ScaleAnimation;
 import android.widget.ImageView;
@@ -102,7 +103,6 @@ public class TImageView extends ImageView{
     }
 
     private void initialize() {
-        setFocusable(true);
         nMoveOffset = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10.0f, getResources().getDisplayMetrics());
         ScaleAnimation scaleInAnim = new ScaleAnimation(1.0f, SCALE_FACTOR, 1.0f, SCALE_FACTOR, 1, 0.5f, 1, 0.5f);
         scaleInAnim.setFillAfter(true);

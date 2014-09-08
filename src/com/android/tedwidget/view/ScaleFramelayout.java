@@ -67,7 +67,7 @@ public class ScaleFramelayout extends FrameLayout{
                         mIsLongPressed = isLongPressed(mLastMotionX, mLastMotionY, event.getX(), event.getY(), mLastDownTime,event.getEventTime(),500);
                     }
                     if(mIsLongPressed){
-                        ToastUtil.show(mContext, "长安了");
+                        //ToastUtil.show(mContext, "长安了");
                     }else{
 
                     }
