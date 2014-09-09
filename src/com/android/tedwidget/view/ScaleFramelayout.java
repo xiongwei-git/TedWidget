@@ -4,10 +4,10 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.ScaleAnimation;
 import android.widget.FrameLayout;
-import com.android.TedFramework.util.ToastUtil;
 
 /**
  * Created by Ted on 2014/9/5.
@@ -24,6 +24,9 @@ public class ScaleFramelayout extends FrameLayout{
 
     /**是否长按了*/
     private boolean mIsLongPressed = false;
+    /**长按回调*/
+    private onLongClickCallBack mLongClickCallBack = null;
+
     /**记录上次点击的信息*/
     private float mLastMotionX;
     private float mLastMotionY;
@@ -67,9 +70,9 @@ public class ScaleFramelayout extends FrameLayout{
                         mIsLongPressed = isLongPressed(mLastMotionX, mLastMotionY, event.getX(), event.getY(), mLastDownTime,event.getEventTime(),500);
                     }
                     if(mIsLongPressed){
-                        //ToastUtil.show(mContext, "长安了");
-                    }else{
-
+                        if(null != mLongClickCallBack){
+                            mLongClickCallBack.onLongClick(this);
+                        }
                     }
                 }
                 mLastMotionX = event.getX();
@@ -162,5 +165,13 @@ public class ScaleFramelayout extends FrameLayout{
             return false;
         }
         return true;
+    }
+
+    public void setmLongClickCallBack(onLongClickCallBack mLongClickCallBack) {
+        this.mLongClickCallBack = mLongClickCallBack;
+    }
+
+    public interface onLongClickCallBack{
+        void onLongClick(View view);
     }
 }
